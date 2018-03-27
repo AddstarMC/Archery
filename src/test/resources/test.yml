@@ -1,0 +1,17 @@
+Test:
+  ARCHERY:
+    targets:
+    - ==: au.com.addstar.targets.BlockTarget
+      score: 0
+      blockLocation:
+              ==: org.bukkit.Location
+              world: TestWorld
+              x: 0.0
+              y: 0.0
+              z: 0.0
+              pitch: 0.0
+              yaw: 0.0
+      actions:
+        ADD_SCORE: {}
+        PLAYER_MESSAGE:
+          message: Hello World

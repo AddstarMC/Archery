@@ -1,0 +1,6 @@
+name: Archery
+main: au.com.addstar.Archery
+version: ${plugin.version}
+author: Narimm
+depend: ['Minigames']
+description: ${project.description}
