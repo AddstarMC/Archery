@@ -1,5 +1,6 @@
 package au.com.addstar.targets;
 
+import au.com.addstar.Archery;
 import au.com.addstar.actions.Actions;
 import au.com.addstar.actions.ArcheryActionInterface;
 import au.com.mineauz.minigames.MinigamePlayer;
@@ -48,12 +49,17 @@ public abstract class AbstractTarget implements Target {
         try {
             actions = (Map<String, Map<String, String>>) map.get("actions");
         } catch (ClassCastException e) {
-            e.printStackTrace();
+            Archery.getMinigamePlugin().getLogger()
+                    .warning("Deserialization Error: " +target.getName()+
+                            " - could not deserialize actions - config Error: " + e.getMessage());
+            
         }
-        for (Map.Entry<String, Map<String, String>> item : actions.entrySet()) {
-            ArcheryActionInterface action = Actions.getAction(item.getKey());
-            action.loadParameters(item.getValue());
-            target.addAction(action);
+        if(actions != null) {
+            for (Map.Entry<String, Map<String, String>> item : actions.entrySet()) {
+                ArcheryActionInterface action = Actions.getAction(item.getKey());
+                action.loadParameters(item.getValue());
+                target.addAction(action);
+            }
         }
         
         

@@ -1,6 +1,7 @@
 package au.com.addstar;
 
 import au.com.addstar.actions.AddScoreArcheryAction;
+import au.com.addstar.events.TargetHitEvent;
 import au.com.addstar.targets.BlockTarget;
 import au.com.addstar.targets.Target;
 import au.com.mineauz.minigames.MinigamePlayer;
@@ -18,6 +19,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
@@ -27,9 +30,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
-import static org.powermock.api.mockito.PowerMockito.doNothing;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 /**
  * Created for the AddstarMC Project.
@@ -45,14 +46,12 @@ public class ArcheryEventListenerTest {
     private static final Minigame game = mock(Minigame.class);
     private static final Player player = mock(Player.class);
     private static MinigamePlayer minigamePlayer;
-    private static final Minigames plugin = mock(Minigames.class);
     private static final Server server = mock(Server.class);
     private static final PluginManager pluginManager = mock(PluginManager.class);
     private static final UUID uuid = UUID.randomUUID();
-    private static final UUID projectileUUID = UUID.randomUUID();
-    
     private static final Logger log = Logger.getLogger("Test");
     private static final Projectile projectile= mock(Projectile.class);
+    private static final UUID projectileUUID = UUID.randomUUID();
     private ArcheryModule mod;
     
     @Before
@@ -69,13 +68,14 @@ public class ArcheryEventListenerTest {
         when(game.getName(false)).thenReturn("Test");
         when(game.getName(true)).thenReturn("Test");
         when(game.usePlayerDisplayNames()).thenReturn(true);
+        Minigames plugin = mock(Minigames.class);
         when(Minigames.getPlugin()).thenReturn(plugin);
         when(plugin.isDebugging()).thenReturn(true);
-        when(plugin.getLogger()).thenReturn(log);
-        when(Bukkit.getServer()).thenReturn(server);
         when(Bukkit.getPluginManager()).thenReturn(pluginManager);
         doNothing().when(pluginManager).callEvent(Matchers.isA(Event.class));
-        when(server.broadcast(Matchers.anyString(),Matchers.anyString())).thenReturn(1);
+        when(plugin.getLogger()).thenReturn(log);
+        when(Bukkit.getServer()).thenReturn(server);
+        when(server.broadcast(Matchers.anyString(),Matchers.anyString())).thenAnswer(answerBroadcast());
         when(projectile.getShooter()).thenReturn(player);
         when(projectile.getServer()).thenReturn(server);
         when(projectile.getUniqueId()).thenReturn(projectileUUID);
@@ -100,6 +100,26 @@ public class ArcheryEventListenerTest {
         assertEquals(minigamePlayer.getScore(),0);
         listener.onProjectileHit(event);
         assertEquals(minigamePlayer.getScore(),1);
+    }
+    @Test
+    public void TestTargetHitEvent(){
+        Target target = new BlockTarget(blockTarget,1);
+        TargetHitEvent event = new TargetHitEvent(game,target,minigamePlayer,projectile);
+        assertEquals(projectile,event.getProjectile());
+        assertEquals(minigamePlayer,event.getShooter());
+        assertEquals(target,event.getTarget());
+    }
     
+    private Answer<Integer> answerBroadcast(){
+        Answer<Integer> answer = new Answer<Integer>() {
+            @Override
+            public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String message = (String) invocationOnMock.getArguments()[0];
+                String perm = (String) invocationOnMock.getArguments()[1];
+                Logger.getAnonymousLogger().info("Message Broadcast:" + message +" Perm required:" + perm );
+                return 1;
+            }
+        };
+        return answer;
     }
 }

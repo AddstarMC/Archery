@@ -40,8 +40,11 @@ import static org.powermock.api.mockito.PowerMockito.*;
 @SuppressStaticInitializationFor("au.com.mineauz.minigames.MinigameUtils")
 public class ArcheryModuleTest {
     private static final Block blockTarget  =  mock(Block.class);
+    private static final Block otherblock = mock(Block.class);
     private static final World world = mock(World.class);
     private static final Location loc = new Location(world,0,0,0);
+    private static final Location otherLoc = new Location(world,1,1,1);
+    
     private static final Minigame game = mock(Minigame.class);
     private static final Player player = mock(Player.class);
     private static MinigamePlayer minigamePlayer;
@@ -55,11 +58,13 @@ public class ArcheryModuleTest {
     public static void Setup(){
         
         when(blockTarget.getLocation()).thenReturn(loc);
+        when(otherblock.getLocation()).thenReturn(otherLoc);
         when(player.getDisplayName()).thenReturn("TestPlayer");
         when(player.getName()).thenReturn("TestPlayer");
         when(player.getUniqueId()).thenReturn(uuid);
         when(world.getName()).thenReturn("TestWorld");
         when(blockTarget.getType()).thenReturn(Material.STONE);
+        when(otherblock.getType()).thenReturn(Material.WOOL);
         when(game.getName(false)).thenReturn("Test");
         when(game.getName(true)).thenReturn("Test");
         when(game.usePlayerDisplayNames()).thenReturn(true);
@@ -115,5 +120,9 @@ public class ArcheryModuleTest {
             }
         }
         assertTrue(minigamePlayer.getScore() == 0);
+        assertTrue(mod.isTarget(blockTarget));
+        assertEquals(target,mod.getTarget(blockTarget));
+        assertFalse(mod.isTarget(otherblock));
+        assertEquals(null,mod.getTarget(otherblock));
     }
 }
