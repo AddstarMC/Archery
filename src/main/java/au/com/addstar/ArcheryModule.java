@@ -70,6 +70,8 @@ public class ArcheryModule extends MinigameModule {
                         if(res instanceof EntityTarget){
                             if (((EntityTarget) res).getTarget() != null){
                                 targets.add((EntityTarget) res);
+                            }else{
+
                             }
                         }
                         if(res instanceof BlockTarget){

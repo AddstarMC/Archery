@@ -3,8 +3,10 @@ package au.com.addstar.targets;
 import au.com.addstar.Archery;
 import au.com.mineauz.minigames.config.IntegerFlag;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 
@@ -27,12 +29,22 @@ public class EntityTarget extends AbstractTarget {
     }
     
     private final Entity target;
+    private final EntityType type;
+    private final String entityName;
+
     
     public EntityTarget(Entity target, int score) {
         setType(name);
         this.target = target;
         this.score = new IntegerFlag(0,"score");
         this.score.setFlag(score);
+        if(target !=null) {
+            this.type = target.getType();
+            this.entityName = target.getCustomName();
+        }else{
+            this.type = null;
+            this.entityName = null;
+        }
     }
     
     
@@ -63,6 +75,9 @@ public class EntityTarget extends AbstractTarget {
         Map<String, Object> result = new HashMap<>();
         result.put("entityUUID", target.getUniqueId().toString());
         result.put("score", score.getFlag());
+        result.put("eType", type.name());
+        result.put("customName", entityName);
+        result.put("location",target.getLocation());
         saveActions(result,this);
         return result;
     }
@@ -73,7 +88,19 @@ public class EntityTarget extends AbstractTarget {
         UUID uuid = UUID.fromString(u);
         int score = (int) map.get("score");
         Entity t = Bukkit.getEntity(uuid);
-        if(t ==  null ){
+        if(t ==  null ) {
+            Location location = (Location) map.get("location");
+            String etype = (String) map.get("eType");
+            if(etype != null && location != null) {
+                EntityType type = EntityType.valueOf(etype);
+                Entity e = location.getWorld().spawn(location, type.getEntityClass());
+                String customName = (String) map.get("customName");
+                if (customName != null) {
+                    e.setCustomNameVisible(true);
+                    e.setCustomName(customName);
+                }
+                return new EntityTarget(e, score);
+            }
             Archery.getMinigamePlugin().getLogger().warning("EntityTarget null: Entity NOT Found: " + uuid);
             return new EntityTarget(null,0);
         }
